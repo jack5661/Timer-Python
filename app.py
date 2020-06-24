@@ -9,10 +9,11 @@ import simpleaudio as sa
 import os
 import todoList
 
-path = os.path.dirname(os.path.realpath(__file__)) + "/analog-watch-alarm_daniel-simion.wav"
+sound = "analog-watch-alarm_daniel-simion.wav"
 
+path = os.path.dirname(os.path.realpath(__file__)) + "/"
 # Credits to https://soundbible.com/2197-Analog-Watch-Alarm.html for the sound file 
-alarm = sa.WaveObject.from_wave_file(path)
+alarm = sa.WaveObject.from_wave_file(path + sound)
 
 class Timer:
     def __init__(self):
@@ -20,10 +21,17 @@ class Timer:
         self.root = Tk()
         self.root.title("Pomodoro Timer")
 
-        self.work = 35 * 60
-        self.work0 = 35
-        self.rest = 10 * 60
-        self.rest0 = 10
+        try:
+            with open(path + "data.txt") as file:
+                print("GOT PREVIOUS SESSION DATA")
+                self.work0 = int(file.readline())
+                self.rest0 = int(file.readline())
+        except (FileNotFoundError):
+            self.work0 = 35
+            self.rest0 = 10
+
+        self.work = self.work0 * 60
+        self.rest = self.rest0 * 60
 
         self.job = None
         self.sessions = 0
@@ -52,7 +60,7 @@ class Timer:
 
         durationFrame = Frame(timerFrame, bd = 10)
         durationFrame.pack(side = LEFT)
-        self.durationText = "00:35:00"
+        self.durationText = datetime.timedelta(seconds = self.work)
         self.durationTimer = Label(durationFrame, text = self.durationText, font = ("Arial", 35), fg = "red")
         self.durationTimer.pack()
         labelDuration = Label(durationFrame, text = "Work Remaining")
@@ -60,7 +68,7 @@ class Timer:
 
         breakFrame = Frame(timerFrame, bd = 10)
         breakFrame.pack(side = LEFT)
-        self.breakText = "00:10:00"
+        self.breakText = datetime.timedelta(seconds = self.rest)
         self.breakTimer = Label(breakFrame, text = self.breakText, font = ("Arial", 35), fg = "red")
         self.breakTimer.pack()
         labelBreak = Label(breakFrame, text = "Break Remaining")
@@ -113,6 +121,10 @@ class Timer:
     def confirmInputs(self):
         if (self.validateInputs()):
             self.pauseTimer()
+            with open(path + "data.txt", "w+") as file:
+                file.write(str(self.work0))
+                file.write("\n")
+                file.write(str(self.rest0))
             self.work = self.work0 * 60
             self.rest = self.rest0 * 60
 
