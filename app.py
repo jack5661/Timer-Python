@@ -7,6 +7,7 @@ import datetime
 from time import sleep
 import simpleaudio as sa
 import os
+import todoList
 
 path = os.path.dirname(os.path.realpath(__file__)) + "/analog-watch-alarm_daniel-simion.wav"
 
@@ -14,18 +15,18 @@ path = os.path.dirname(os.path.realpath(__file__)) + "/analog-watch-alarm_daniel
 alarm = sa.WaveObject.from_wave_file(path)
 
 class Timer:
-
     def __init__(self):
 
         self.root = Tk()
         self.root.title("Pomodoro Timer")
 
-        self.work = 1 #35 * 60
+        self.work = 35 * 60
         self.work0 = 35
-        self.rest = 1 #10 * 60
+        self.rest = 10 * 60
         self.rest0 = 10
 
         self.job = None
+        self.sessions = 0
 
         title = Label(self.root, text = "Pomodoro Timer", font = ("Arial", 20))
         title.pack()
@@ -43,7 +44,7 @@ class Timer:
         self.breakInput = Entry(input, font = ("Arial", 14))
         self.breakInput.pack(side = LEFT)
 
-        confirmBtn = Button(self.root, text = "Confirm", font = ("Arial", 12), command = lambda: self.confirmInputs())
+        confirmBtn = Button(self.root, text = "Confirm", font = ("Arial", 12), width = 40, command = lambda: self.confirmInputs())
         confirmBtn.pack()
 
         timerFrame = Frame(self.root)
@@ -65,6 +66,13 @@ class Timer:
         labelBreak = Label(breakFrame, text = "Break Remaining")
         labelBreak.pack()
 
+        sessionsFrame = Frame(timerFrame, bd = 10)
+        sessionsFrame.pack(side = LEFT)
+        self.sessionsCounter = Label(sessionsFrame, text = self.sessions, font = ("Arial", 35), fg = "red")
+        self.sessionsCounter.pack()
+        sessionsLabel = Label(sessionsFrame, text = "Sessions Worked")
+        sessionsLabel.pack()
+
         btnsFrame = Frame(self.root, bd = 18)
         btnsFrame.pack()
 
@@ -82,12 +90,23 @@ class Timer:
                             padx = 25
                             )
         pauseBtn.pack(side = LEFT, padx = 10)
+        
+
+        restartBtn = Button(btnsFrame,
+                            command = lambda : self.restartTimer(), 
+                            text = "Restart", 
+                            font = ("Arial", 12),
+                            padx = 25
+                            )
+        restartBtn.pack(side = LEFT, padx = 10)
 
         windowWidth = self.root.winfo_reqwidth()
         windowHeight = self.root.winfo_reqheight()
         positionRight = int(self.root.winfo_screenwidth()/2 - windowWidth * 2.2)
-        positionDown = int(self.root.winfo_screenheight()/2.5 - windowHeight/2)
+        positionDown = int(self.root.winfo_screenheight()/5 - windowHeight/2)
         self.root.geometry("+{}+{}".format(positionRight, positionDown))
+
+        self.todoList = todoList.todoList(self.root)
 
         self.root.mainloop()
 
@@ -134,6 +153,7 @@ class Timer:
             self.rest -= 1
             self.job = self.breakTimer.after(1000, self.startBreak)
         else:
+            self.sessions += 1
             self.playAlarm()
             self.restartTimer()
     
@@ -151,6 +171,8 @@ class Timer:
             self.job = None
 
     def restartTimer(self):
+        self.pauseTimer()
+        
         self.work = self.work0 * 60
         self.rest = self.rest0 * 60
 
