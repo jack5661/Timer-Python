@@ -2,6 +2,7 @@ try:
     from Tkinter import *
 except ModuleNotFoundError:
     from tkinter import *
+    from tkinter import messagebox
 
 import datetime
 from time import sleep
@@ -136,8 +137,10 @@ class Timer:
 
     def validateInputs(self):
         try:
-            self.work0 = int(self.durationInput.get())
-            self.rest0 = int(self.breakInput.get())
+            work = int(self.durationInput.get())
+            rest = int(self.breakInput.get())
+            self.work0 = work
+            self.rest0 = rest
 
             if (self.work0 >= 0 and self.rest0 >= 0):
                 return True
@@ -146,6 +149,7 @@ class Timer:
         except ValueError:
             if (self.work == 35 and self.rest == 10):
                 return True
+            messagebox.showerror("Error", "Invalid Inputs")
             return False
 
     def startTimer(self):
@@ -166,6 +170,7 @@ class Timer:
             self.job = self.breakTimer.after(1000, self.startBreak)
         else:
             self.sessions += 1
+            self.sessionsCounter.configure(text = self.sessions)
             self.playAlarm()
             self.restartTimer()
     
